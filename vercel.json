@@ -7,18 +7,12 @@
       }
     ],
     "routes": [
-      {
-      "src": "/(.*)",
-      "dest": "/index.js"
-      }
+      { "src": "/game/(?<game>[a-z0-9_-]+)/(?<theme>[a-z0-9_-]+)", "dest": "/game/$game/$theme.json" },
+      { "src": "/(?<game>[a-z0-9_-]+)/(?<theme>[a-z0-9_-]+)", "dest": "/game/$game/$theme.json" },
+      { "src": "/(.*)", "dest": "/index.js" }
     ],
   "headers": [
-    {
-      "source": "/data/(.*)\\.json",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=600" }
-      ]
-    }
+    { "source": "/game/(.*)\\.json", "headers": [ { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=600" } ] }
   ],
     "env": {
       "NODE_ENV": "production"

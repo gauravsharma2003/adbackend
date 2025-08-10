@@ -5,6 +5,9 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Serve static assets from public for local/dev
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Health check
 app.get('/', (_req, res) => {
   res.json({ status: 'ok' });
@@ -20,31 +23,17 @@ const serveGameAsset = (req, res) => {
     return;
   }
 
-  const fileName = `${safeGame}${safeTheme}.json`;
-  const filePath = path.join(__dirname, 'data', fileName);
-
-  fs.readFile(filePath, 'utf8', (readError, fileContents) => {
-    if (readError) {
-      if (readError.code === 'ENOENT') {
-        res.status(404).json({ error: 'File not found', file: fileName });
+  const fileName = `${safeTheme}.json`;
+  const publicPath = path.join(__dirname, 'public', 'game', safeGame, fileName);
+  // Cache at edge; static files will also be cached by Vercel CDN
+  res.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=600');
+  res.sendFile(publicPath, (err) => {
+    if (err) {
+      if (err.code === 'ENOENT') {
+        res.status(404).json({ error: 'File not found', file: `game/${safeGame}/${fileName}` });
         return;
       }
-      res.status(500).json({ error: 'Unable to read JSON file', details: readError.message });
-      return;
-    }
-
-    if (!fileContents || fileContents.trim().length === 0) {
-      res.status(204).end();
-      return;
-    }
-
-    try {
-      const jsonData = JSON.parse(fileContents);
-      // Edge CDN caching on Vercel: cached at the edge for a day, with SWR of 10 minutes
-      res.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=600');
-      res.json(jsonData);
-    } catch (parseError) {
-      res.status(500).json({ error: 'Invalid JSON in file', details: parseError.message });
+      res.status(500).json({ error: 'Unable to serve file', details: err.message });
     }
   });
 };
