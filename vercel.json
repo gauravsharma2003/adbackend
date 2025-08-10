@@ -8,10 +8,18 @@
     ],
     "routes": [
       {
-        "src": "/(.*)",
-        "dest": "/index.js"
+      "src": "/(.*)",
+      "dest": "/index.js"
       }
     ],
+  "headers": [
+    {
+      "source": "/data/(.*)\\.json",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=600" }
+      ]
+    }
+  ],
     "env": {
       "NODE_ENV": "production"
     }

@@ -40,6 +40,8 @@ const serveGameAsset = (req, res) => {
 
     try {
       const jsonData = JSON.parse(fileContents);
+      // Edge CDN caching on Vercel: cached at the edge for a day, with SWR of 10 minutes
+      res.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=600');
       res.json(jsonData);
     } catch (parseError) {
       res.status(500).json({ error: 'Invalid JSON in file', details: parseError.message });
