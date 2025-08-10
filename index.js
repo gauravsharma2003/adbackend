@@ -5,10 +5,8 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static assets from public for local/dev
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Health check
 app.get('/', (_req, res) => {
   res.json({ status: 'ok' });
 });
@@ -25,7 +23,6 @@ const serveGameAsset = (req, res) => {
 
   const fileName = `${safeTheme}.json`;
   const publicPath = path.join(__dirname, 'public', 'game', safeGame, fileName);
-  // Cache at edge; static files will also be cached by Vercel CDN
   res.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=600');
   res.sendFile(publicPath, (err) => {
     if (err) {
