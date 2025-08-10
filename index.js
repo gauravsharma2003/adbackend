@@ -9,15 +9,35 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (_req, res) => {
   res.json({ status: 'ok' });
 });
+const serveGameAsset = (req, res) => {
+  const { game, theme } = req.params;
 
-// Returns the JSON file contents as-is
-app.get('/game/gamename/dark', (_req, res) => {
-  const filePath = path.join(__dirname, 'data', 'dark.json');
+  const safeGame = String(game || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  const safeTheme = String(theme || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+
+  if (!safeGame || !safeTheme) {
+    res.status(400).json({ error: 'Invalid game or theme' });
+    return;
+  }
+
+  const fileName = `${safeGame}${safeTheme}.json`;
+  const filePath = path.join(__dirname, 'data', fileName);
+
   fs.readFile(filePath, 'utf8', (readError, fileContents) => {
     if (readError) {
+      if (readError.code === 'ENOENT') {
+        res.status(404).json({ error: 'File not found', file: fileName });
+        return;
+      }
       res.status(500).json({ error: 'Unable to read JSON file', details: readError.message });
       return;
     }
+
+    if (!fileContents || fileContents.trim().length === 0) {
+      res.status(204).end();
+      return;
+    }
+
     try {
       const jsonData = JSON.parse(fileContents);
       res.json(jsonData);
@@ -25,24 +45,10 @@ app.get('/game/gamename/dark', (_req, res) => {
       res.status(500).json({ error: 'Invalid JSON in file', details: parseError.message });
     }
   });
-});
+};
 
-// Returns the light JSON file contents as-is
-app.get('/game/gamename/light', (_req, res) => {
-  const filePath = path.join(__dirname, 'data', 'light.json');
-  fs.readFile(filePath, 'utf8', (readError, fileContents) => {
-    if (readError) {
-      res.status(500).json({ error: 'Unable to read JSON file', details: readError.message });
-      return;
-    }
-    try {
-      const jsonData = JSON.parse(fileContents);
-      res.json(jsonData);
-    } catch (parseError) {
-      res.status(500).json({ error: 'Invalid JSON in file', details: parseError.message });
-    }
-  });
-});
+app.get('/game/:game/:theme', serveGameAsset);
+app.get('/:game/:theme', serveGameAsset);
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
