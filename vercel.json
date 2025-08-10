@@ -12,7 +12,12 @@
       { "source": "/:path*", "destination": "/index.js" }
     ],
     "headers": [
-      { "source": "/game/:path*.json", "headers": [ { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=600" } ] }
+      { "source": "/game/:path*.json", "headers": [ { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=600" } ] },
+      { "source": "/(.*)", "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ] }
     ],
     "env": {
       "NODE_ENV": "production"
