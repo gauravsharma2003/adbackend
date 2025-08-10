@@ -6,14 +6,14 @@
         "use": "@vercel/node"
       }
     ],
-    "routes": [
-      { "src": "/game/(?<game>[a-z0-9_-]+)/(?<theme>[a-z0-9_-]+)", "dest": "/game/$game/$theme.json" },
-      { "src": "/(?<game>[a-z0-9_-]+)/(?<theme>[a-z0-9_-]+)", "dest": "/game/$game/$theme.json" },
-      { "src": "/(.*)", "dest": "/index.js" }
+    "rewrites": [
+      { "source": "/game/:game/:theme", "destination": "/game/:game/:theme.json" },
+      { "source": "/:game/:theme", "destination": "/game/:game/:theme.json" },
+      { "source": "/:path*", "destination": "/index.js" }
     ],
-  "headers": [
-    { "source": "/game/(.*)\\.json", "headers": [ { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=600" } ] }
-  ],
+    "headers": [
+      { "source": "/game/:path*.json", "headers": [ { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=600" } ] }
+    ],
     "env": {
       "NODE_ENV": "production"
     }
